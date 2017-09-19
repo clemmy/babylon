@@ -195,6 +195,9 @@ pp.jsxParseIdentifier = function() {
   const node = this.startNode();
   if (this.match(tt.jsxName)) {
     node.name = this.state.value;
+  } else if (this.match(tt.jsxTagEnd)) {
+    node.name = "";
+    return this.finishNode(node, "JSXIdentifier"); // skip this.next()
   } else if (this.state.type.keyword) {
     node.name = this.state.type.keyword;
   } else {
@@ -315,6 +318,7 @@ pp.jsxParseOpeningElementAt = function(startPos, startLoc) {
   const node = this.startNodeAt(startPos, startLoc);
   node.attributes = [];
   node.name = this.jsxParseElementName();
+  node.isFragment = node.name.type === "JSXIdentifier" && node.name.name === "";
   while (!this.match(tt.slash) && !this.match(tt.jsxTagEnd)) {
     node.attributes.push(this.jsxParseAttribute());
   }
@@ -328,6 +332,7 @@ pp.jsxParseOpeningElementAt = function(startPos, startLoc) {
 pp.jsxParseClosingElementAt = function(startPos, startLoc) {
   const node = this.startNodeAt(startPos, startLoc);
   node.name = this.jsxParseElementName();
+  node.isFragment = node.name.type === "JSXIdentifier" && node.name.name === "";
   this.expect(tt.jsxTagEnd);
   return this.finishNode(node, "JSXClosingElement");
 };
