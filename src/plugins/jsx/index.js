@@ -384,6 +384,15 @@ pp.jsxParseElementAt = function(startPos, startLoc) {
         "Expected corresponding JSX closing tag for <" + getQualifiedJSXName(openingElement.name) + ">"
       );
     }
+
+    if (closingElement.isFragment !== openingElement.isFragment) {
+      this.raise(
+        closingElement.start,
+        "Expected corresponding JSX fragment tag for <>"
+      );
+    }
+
+    node.isFragment = openingElement.isFragment;
   }
 
   node.openingElement = openingElement;
