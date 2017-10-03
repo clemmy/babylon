@@ -10,6 +10,8 @@ import { isNewLine } from "../../util/whitespace";
 const HEX_NUMBER = /^[\da-fA-F]+$/;
 const DECIMAL_NUMBER = /^\d+$/;
 
+const FEATURE_FLAG_JSX_FRAGMENT = true;
+
 tc.j_oTag = new TokContext("<tag", false);
 tc.j_cTag = new TokContext("</tag", false);
 tc.j_expr = new TokContext("<tag>...</tag>", true, true);
@@ -195,7 +197,7 @@ pp.jsxParseIdentifier = function() {
   const node = this.startNode();
   if (this.match(tt.jsxName)) {
     node.name = this.state.value;
-  } else if (this.match(tt.jsxTagEnd)) {
+  } else if (FEATURE_FLAG_JSX_FRAGMENT && this.match(tt.jsxTagEnd)) {
     node.name = "";
     return this.finishNode(node, "JSXIdentifier"); // skip this.next()
   } else if (this.state.type.keyword) {
@@ -318,7 +320,9 @@ pp.jsxParseOpeningElementAt = function(startPos, startLoc) {
   const node = this.startNodeAt(startPos, startLoc);
   node.attributes = [];
   node.name = this.jsxParseElementName();
-  node.isFragment = node.name.type === "JSXIdentifier" && node.name.name === "";
+  if (FEATURE_FLAG_JSX_FRAGMENT) {
+    node.isFragment = node.name.type === "JSXIdentifier" && node.name.name === "";
+  }
   while (!this.match(tt.slash) && !this.match(tt.jsxTagEnd)) {
     node.attributes.push(this.jsxParseAttribute());
   }
@@ -332,7 +336,9 @@ pp.jsxParseOpeningElementAt = function(startPos, startLoc) {
 pp.jsxParseClosingElementAt = function(startPos, startLoc) {
   const node = this.startNodeAt(startPos, startLoc);
   node.name = this.jsxParseElementName();
-  node.isFragment = node.name.type === "JSXIdentifier" && node.name.name === "";
+  if (FEATURE_FLAG_JSX_FRAGMENT) {
+    node.isFragment = node.name.type === "JSXIdentifier" && node.name.name === "";
+  }
   this.expect(tt.jsxTagEnd);
   return this.finishNode(node, "JSXClosingElement");
 };
@@ -385,14 +391,16 @@ pp.jsxParseElementAt = function(startPos, startLoc) {
       );
     }
 
-    if (closingElement.isFragment !== openingElement.isFragment) {
-      this.raise(
-        closingElement.start,
-        "Expected corresponding JSX fragment tag for <>"
-      );
-    }
+    if (FEATURE_FLAG_JSX_FRAGMENT) {
+      if (closingElement.isFragment !== openingElement.isFragment) {
+        this.raise(
+          closingElement.start,
+          "Expected corresponding JSX fragment tag for <>"
+        );
+      }
 
-    node.isFragment = openingElement.isFragment;
+      node.isFragment = openingElement.isFragment;
+    }
   }
 
   node.openingElement = openingElement;
