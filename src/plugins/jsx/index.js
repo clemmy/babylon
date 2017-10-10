@@ -197,9 +197,6 @@ pp.jsxParseIdentifier = function() {
   const node = this.startNode();
   if (this.match(tt.jsxName)) {
     node.name = this.state.value;
-  } else if (FEATURE_FLAG_JSX_FRAGMENT && this.match(tt.jsxTagEnd)) {
-    node.name = "";
-    return this.finishNode(node, "JSXIdentifier"); // skip this.next()
   } else if (this.state.type.keyword) {
     node.name = this.state.type.keyword;
   } else {
@@ -318,11 +315,15 @@ pp.jsxParseAttribute = function() {
 
 pp.jsxParseOpeningElementAt = function(startPos, startLoc) {
   const node = this.startNodeAt(startPos, startLoc);
+
+  if (FEATURE_FLAG_JSX_FRAGMENT && this.match(tt.jsxTagEnd)) {
+    this.expect(tt.jsxTagEnd);
+    return this.finishNode(node, "JSXOpeningFragment");
+  }
+
   node.attributes = [];
   node.name = this.jsxParseElementName();
-  if (FEATURE_FLAG_JSX_FRAGMENT) {
-    node.isFragment = node.name.type === "JSXIdentifier" && node.name.name === "";
-  }
+
   while (!this.match(tt.slash) && !this.match(tt.jsxTagEnd)) {
     node.attributes.push(this.jsxParseAttribute());
   }
@@ -335,15 +336,16 @@ pp.jsxParseOpeningElementAt = function(startPos, startLoc) {
 
 pp.jsxParseClosingElementAt = function(startPos, startLoc) {
   const node = this.startNodeAt(startPos, startLoc);
-  node.name = this.jsxParseElementName();
-  if (FEATURE_FLAG_JSX_FRAGMENT) {
-    node.isFragment = node.name.type === "JSXIdentifier" && node.name.name === "";
+  if (FEATURE_FLAG_JSX_FRAGMENT && this.match(tt.jsxTagEnd)) {
+    this.expect(tt.jsxTagEnd);
+    return this.finishNode(node, "JSXClosingFragment");
   }
+  node.name = this.jsxParseElementName();
   this.expect(tt.jsxTagEnd);
   return this.finishNode(node, "JSXClosingElement");
 };
 
-// Parses entire JSX element, including it"s opening tag
+// Parses entire JSX element or fragment, including it"s opening tag
 // (starting after "<"), attributes, contents and closing tag.
 
 pp.jsxParseElementAt = function(startPos, startLoc) {
@@ -384,35 +386,52 @@ pp.jsxParseElementAt = function(startPos, startLoc) {
       }
     }
 
-    if (getQualifiedJSXName(closingElement.name) !== getQualifiedJSXName(openingElement.name)) {
-      this.raise(
-        closingElement.start,
-        "Expected corresponding JSX closing tag for <" + getQualifiedJSXName(openingElement.name) + ">"
-      );
-    }
-
     if (FEATURE_FLAG_JSX_FRAGMENT) {
-      if (closingElement.isFragment !== openingElement.isFragment) {
+      if (openingElement.type === "JSXOpeningFragment" && closingElement.type === "JSXClosingFragment") {
+        if (closingElement.isFragment !== openingElement.isFragment) {
+          this.raise(
+            closingElement.start,
+            "Expected corresponding JSX fragment tag for <>"
+          );
+        }
+      } else {
+        if (getQualifiedJSXName(closingElement.name) !== getQualifiedJSXName(openingElement.name)) {
+          this.raise(
+            closingElement.start,
+            "Expected corresponding JSX closing tag for <" + getQualifiedJSXName(openingElement.name) + ">"
+          );
+        }
+      }
+    } else {
+      if (getQualifiedJSXName(closingElement.name) !== getQualifiedJSXName(openingElement.name)) {
         this.raise(
           closingElement.start,
-          "Expected corresponding JSX fragment tag for <>"
+          "Expected corresponding JSX closing tag for <" + getQualifiedJSXName(openingElement.name) + ">"
         );
       }
-
-      node.isFragment = openingElement.isFragment;
     }
   }
 
-  node.openingElement = openingElement;
-  node.closingElement = closingElement;
-  node.children = children;
-  if (this.match(tt.relational) && this.state.value === "<") {
-    this.raise(this.state.start, "Adjacent JSX elements must be wrapped in an enclosing tag");
+  if (FEATURE_FLAG_JSX_FRAGMENT && openingElement.type === "JSXOpeningFragment") {
+    node.openingFragment = openingElement;
+    node.closingFragment = closingElement;
+    node.children = children;
+    if (this.match(tt.relational) && this.state.value === "<") {
+      this.raise(this.state.start, "Adjacent JSX elements must be wrapped in an enclosing tag");
+    }
+    return this.finishNode(node, "JSXFragment");
+  } else {
+    node.openingElement = openingElement;
+    node.closingElement = closingElement;
+    node.children = children;
+    if (this.match(tt.relational) && this.state.value === "<") {
+      this.raise(this.state.start, "Adjacent JSX elements must be wrapped in an enclosing tag");
+    }
+    return this.finishNode(node, "JSXElement");
   }
-  return this.finishNode(node, "JSXElement");
 };
 
-// Parses entire JSX element from current position.
+// Parses entire JSX element or fragment from current position.
 
 pp.jsxParseElement = function() {
   const startPos = this.state.start;
