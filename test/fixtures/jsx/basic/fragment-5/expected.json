@@ -43,7 +43,7 @@
           }
         },
         "expression": {
-          "type": "JSXElement",
+          "type": "JSXFragment",
           "start": 0,
           "end": 49,
           "loc": {
@@ -56,9 +56,8 @@
               "column": 3
             }
           },
-          "isFragment": true,
-          "openingElement": {
-            "type": "JSXOpeningElement",
+          "openingFragment": {
+            "type": "JSXOpeningFragment",
             "start": 0,
             "end": 2,
             "loc": {
@@ -70,29 +69,10 @@
                 "line": 1,
                 "column": 2
               }
-            },
-            "attributes": [],
-            "name": {
-              "type": "JSXIdentifier",
-              "start": 1,
-              "end": 1,
-              "loc": {
-                "start": {
-                  "line": 1,
-                  "column": 1
-                },
-                "end": {
-                  "line": 1,
-                  "column": 1
-                }
-              },
-              "name": ""
-            },
-            "isFragment": true,
-            "selfClosing": false
+            }
           },
-          "closingElement": {
-            "type": "JSXClosingElement",
+          "closingFragment": {
+            "type": "JSXClosingFragment",
             "start": 46,
             "end": 49,
             "loc": {
@@ -104,24 +84,7 @@
                 "line": 7,
                 "column": 3
               }
-            },
-            "name": {
-              "type": "JSXIdentifier",
-              "start": 48,
-              "end": 48,
-              "loc": {
-                "start": {
-                  "line": 7,
-                  "column": 2
-                },
-                "end": {
-                  "line": 7,
-                  "column": 2
-                }
-              },
-              "name": ""
-            },
-            "isFragment": true
+            }
           },
           "children": [
             {
@@ -142,7 +105,7 @@
               "value": "\n  "
             },
             {
-              "type": "JSXElement",
+              "type": "JSXFragment",
               "start": 5,
               "end": 45,
               "loc": {
@@ -155,9 +118,8 @@
                   "column": 5
                 }
               },
-              "isFragment": true,
-              "openingElement": {
-                "type": "JSXOpeningElement",
+              "openingFragment": {
+                "type": "JSXOpeningFragment",
                 "start": 5,
                 "end": 7,
                 "loc": {
@@ -169,29 +131,10 @@
                     "line": 2,
                     "column": 4
                   }
-                },
-                "attributes": [],
-                "name": {
-                  "type": "JSXIdentifier",
-                  "start": 6,
-                  "end": 6,
-                  "loc": {
-                    "start": {
-                      "line": 2,
-                      "column": 3
-                    },
-                    "end": {
-                      "line": 2,
-                      "column": 3
-                    }
-                  },
-                  "name": ""
-                },
-                "isFragment": true,
-                "selfClosing": false
+                }
               },
-              "closingElement": {
-                "type": "JSXClosingElement",
+              "closingFragment": {
+                "type": "JSXClosingFragment",
                 "start": 42,
                 "end": 45,
                 "loc": {
@@ -203,24 +146,7 @@
                     "line": 6,
                     "column": 5
                   }
-                },
-                "name": {
-                  "type": "JSXIdentifier",
-                  "start": 44,
-                  "end": 44,
-                  "loc": {
-                    "start": {
-                      "line": 6,
-                      "column": 4
-                    },
-                    "end": {
-                      "line": 6,
-                      "column": 4
-                    }
-                  },
-                  "name": ""
-                },
-                "isFragment": true
+                }
               },
               "children": [
                 {
@@ -241,7 +167,7 @@
                   "value": "\n    "
                 },
                 {
-                  "type": "JSXElement",
+                  "type": "JSXFragment",
                   "start": 12,
                   "end": 39,
                   "loc": {
@@ -254,9 +180,8 @@
                       "column": 7
                     }
                   },
-                  "isFragment": true,
-                  "openingElement": {
-                    "type": "JSXOpeningElement",
+                  "openingFragment": {
+                    "type": "JSXOpeningFragment",
                     "start": 12,
                     "end": 14,
                     "loc": {
@@ -268,29 +193,10 @@
                         "line": 3,
                         "column": 6
                       }
-                    },
-                    "attributes": [],
-                    "name": {
-                      "type": "JSXIdentifier",
-                      "start": 13,
-                      "end": 13,
-                      "loc": {
-                        "start": {
-                          "line": 3,
-                          "column": 5
-                        },
-                        "end": {
-                          "line": 3,
-                          "column": 5
-                        }
-                      },
-                      "name": ""
-                    },
-                    "isFragment": true,
-                    "selfClosing": false
+                    }
                   },
-                  "closingElement": {
-                    "type": "JSXClosingElement",
+                  "closingFragment": {
+                    "type": "JSXClosingFragment",
                     "start": 36,
                     "end": 39,
                     "loc": {
@@ -302,24 +208,7 @@
                         "line": 5,
                         "column": 7
                       }
-                    },
-                    "name": {
-                      "type": "JSXIdentifier",
-                      "start": 38,
-                      "end": 38,
-                      "loc": {
-                        "start": {
-                          "line": 5,
-                          "column": 6
-                        },
-                        "end": {
-                          "line": 5,
-                          "column": 6
-                        }
-                      },
-                      "name": ""
-                    },
-                    "isFragment": true
+                    }
                   },
                   "children": [
                     {

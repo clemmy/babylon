@@ -387,14 +387,18 @@ pp.jsxParseElementAt = function(startPos, startLoc) {
     }
 
     if (FEATURE_FLAG_JSX_FRAGMENT) {
-      if (openingElement.type === "JSXOpeningFragment" && closingElement.type === "JSXClosingFragment") {
-        if (closingElement.isFragment !== openingElement.isFragment) {
-          this.raise(
-            closingElement.start,
-            "Expected corresponding JSX fragment tag for <>"
-          );
-        }
-      } else {
+      if (openingElement.type === "JSXOpeningFragment" && closingElement.type !== "JSXClosingFragment") {
+        this.raise(
+          closingElement.start,
+          "Expected corresponding JSX closing tag for <>"
+        );
+      } else if (openingElement.type !== "JSXOpeningFragment"
+        && closingElement.type === "JSXClosingFragment") {
+        this.raise(
+          closingElement.start,
+          "Expected corresponding JSX closing tag for <" + getQualifiedJSXName(openingElement.name) + ">"
+        );
+      } else if (openingElement.type === "JSXOpeningElement" && closingElement.type === "JSXClosingElement") {
         if (getQualifiedJSXName(closingElement.name) !== getQualifiedJSXName(openingElement.name)) {
           this.raise(
             closingElement.start,

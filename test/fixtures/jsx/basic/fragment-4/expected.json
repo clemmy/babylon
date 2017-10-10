@@ -43,7 +43,7 @@
           }
         },
         "expression": {
-          "type": "JSXElement",
+          "type": "JSXFragment",
           "start": 0,
           "end": 50,
           "loc": {
@@ -56,9 +56,8 @@
               "column": 3
             }
           },
-          "isFragment": true,
-          "openingElement": {
-            "type": "JSXOpeningElement",
+          "openingFragment": {
+            "type": "JSXOpeningFragment",
             "start": 0,
             "end": 3,
             "loc": {
@@ -70,29 +69,10 @@
                 "line": 1,
                 "column": 3
               }
-            },
-            "attributes": [],
-            "name": {
-              "type": "JSXIdentifier",
-              "start": 2,
-              "end": 1,
-              "loc": {
-                "start": {
-                  "line": 1,
-                  "column": 2
-                },
-                "end": {
-                  "line": 1,
-                  "column": 1
-                }
-              },
-              "name": ""
-            },
-            "isFragment": true,
-            "selfClosing": false
+            }
           },
-          "closingElement": {
-            "type": "JSXClosingElement",
+          "closingFragment": {
+            "type": "JSXClosingFragment",
             "start": 47,
             "end": 50,
             "loc": {
@@ -104,24 +84,7 @@
                 "line": 6,
                 "column": 3
               }
-            },
-            "name": {
-              "type": "JSXIdentifier",
-              "start": 49,
-              "end": 49,
-              "loc": {
-                "start": {
-                  "line": 6,
-                  "column": 2
-                },
-                "end": {
-                  "line": 6,
-                  "column": 2
-                }
-              },
-              "name": ""
-            },
-            "isFragment": true
+            }
           },
           "children": [
             {
@@ -155,7 +118,6 @@
                   "column": 9
                 }
               },
-              "isFragment": false,
               "openingElement": {
                 "type": "JSXOpeningElement",
                 "start": 6,
@@ -187,7 +149,6 @@
                   },
                   "name": "span"
                 },
-                "isFragment": false,
                 "selfClosing": false
               },
               "closingElement": {
@@ -219,8 +180,7 @@
                     }
                   },
                   "name": "span"
-                },
-                "isFragment": false
+                }
               },
               "children": [
                 {
@@ -273,7 +233,6 @@
                   "column": 16
                 }
               },
-              "isFragment": false,
               "openingElement": {
                 "type": "JSXOpeningElement",
                 "start": 32,
@@ -305,7 +264,6 @@
                   },
                   "name": "div"
                 },
-                "isFragment": false,
                 "selfClosing": false
               },
               "closingElement": {
@@ -337,8 +295,7 @@
                     }
                   },
                   "name": "div"
-                },
-                "isFragment": false
+                }
               },
               "children": [
                 {
