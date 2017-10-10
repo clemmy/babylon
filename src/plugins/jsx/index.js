@@ -37,6 +37,19 @@ tt.jsxTagEnd.updateContext = function(prevType) {
   }
 };
 
+function isFragment(
+  object:
+    | ?N.JSXOpeningElement
+    | ?N.JSXClosingElement
+    | ?N.JSXOpeningFragment
+    | ?N.JSXClosingFragment,
+): boolean {
+  return object
+    ? object.type === "JSXOpeningFragment" ||
+      object.type === "JSXClosingFragment"
+    : false;
+}
+
 // Transforms JSX element name to string.
 
 function getQualifiedJSXName(
@@ -341,6 +354,10 @@ export default (superClass: Class<Parser>): Class<Parser> =>
       startLoc: Position,
     ): N.JSXOpeningElement {
       const node = this.startNodeAt(startPos, startLoc);
+      if (this.match(tt.jsxTagEnd)) {
+        this.expect(tt.jsxTagEnd);
+        return this.finishNode(node, "JSXOpeningFragment");
+      }
       node.attributes = [];
       node.name = this.jsxParseElementName();
       while (!this.match(tt.slash) && !this.match(tt.jsxTagEnd)) {
@@ -358,6 +375,10 @@ export default (superClass: Class<Parser>): Class<Parser> =>
       startLoc: Position,
     ): N.JSXClosingElement {
       const node = this.startNodeAt(startPos, startLoc);
+      if (this.match(tt.jsxTagEnd)) {
+        this.expect(tt.jsxTagEnd);
+        return this.finishNode(node, "JSXClosingFragment");
+      }
       node.name = this.jsxParseElementName();
       this.expect(tt.jsxTagEnd);
       return this.finishNode(node, "JSXClosingElement");
@@ -410,8 +431,18 @@ export default (superClass: Class<Parser>): Class<Parser> =>
 
         if (
           // $FlowIgnore
-          getQualifiedJSXName(closingElement.name) !==
-          getQualifiedJSXName(openingElement.name)
+          isFragment(openingElement) &&
+          !isFragment(closingElement)
+        ) {
+          this.raise(
+            // $FlowIgnore
+            closingElement.start,
+            "Expected corresponding JSX closing tag for <>",
+          );
+        } else if (
+          // $FlowIgnore
+          !isFragment(openingElement) &&
+          isFragment(closingElement)
         ) {
           this.raise(
             // $FlowIgnore
@@ -420,11 +451,35 @@ export default (superClass: Class<Parser>): Class<Parser> =>
               getQualifiedJSXName(openingElement.name) +
               ">",
           );
+        } else if (
+          // $FlowIgnore
+          !isFragment(openingElement) &&
+          !isFragment(closingElement)
+        ) {
+          if (
+            // $FlowIgnore
+            getQualifiedJSXName(closingElement.name) !==
+            getQualifiedJSXName(openingElement.name)
+          ) {
+            this.raise(
+              // $FlowIgnore
+              closingElement.start,
+              "Expected corresponding JSX closing tag for <" +
+                getQualifiedJSXName(openingElement.name) +
+                ">",
+            );
+          }
         }
       }
 
-      node.openingElement = openingElement;
-      node.closingElement = closingElement;
+      // $FlowIgnore
+      if (isFragment(openingElement)) {
+        node.openingFragment = openingElement;
+        node.closingFragment = closingElement;
+      } else {
+        node.openingElement = openingElement;
+        node.closingElement = closingElement;
+      }
       node.children = children;
       if (this.match(tt.relational) && this.state.value === "<") {
         this.raise(
@@ -432,7 +487,11 @@ export default (superClass: Class<Parser>): Class<Parser> =>
           "Adjacent JSX elements must be wrapped in an enclosing tag",
         );
       }
-      return this.finishNode(node, "JSXElement");
+
+      // $FlowIgnore
+      return isFragment(openingElement)
+        ? this.finishNode(node, "JSXFragment")
+        : this.finishNode(node, "JSXElement");
     }
 
     // Parses entire JSX element from current position.
