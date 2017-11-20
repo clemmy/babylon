@@ -281,18 +281,39 @@ pp.jsxParseSpreadChild = function() {
   return this.finishNode(node, "JSXSpreadChild");
 };
 
+// Parses do expression
+
+pp.jsxParseDoExpression = function() {
+  if (this.hasPlugin("doExpressions")) {
+    const node = this.startNode();
+    // this.next();
+    const oldInFunction = this.state.inFunction;
+    const oldLabels = this.state.labels;
+    this.state.labels = [];
+    this.state.inFunction = false;
+    node.body = this.parseBlock(false, true);
+    this.state.inFunction = oldInFunction;
+    this.state.labels = oldLabels;
+    return this.finishNode(node, "DoExpression");
+  }
+};
+
 // Parses JSX expression enclosed into curly brackets.
 
 
 pp.jsxParseExpressionContainer = function() {
   const node = this.startNode();
-  this.next();
-  if (this.match(tt.braceR)) {
-    node.expression = this.jsxParseEmptyExpression();
-  } else {
-    node.expression = this.parseExpression();
-  }
-  this.expect(tt.braceR);
+  // this.next();
+  // if (this.match(tt.braceR)) {
+  //   node.expression = this.jsxParseEmptyExpression();
+  // } else {
+  //   // node.expression = this.parseExpression();
+  //   node.expression = this.jsxParseDoExpression();
+  // }
+  // this.expect(tt.braceR);
+
+  node.expression = this.jsxParseDoExpression();
+
   return this.finishNode(node, "JSXExpressionContainer");
 };
 
@@ -375,8 +396,13 @@ pp.jsxParseElementAt = function(startPos, startLoc) {
           if (this.lookahead().type === tt.ellipsis) {
             children.push(this.jsxParseSpreadChild());
           } else {
+            debugger;
+
             children.push(this.jsxParseExpressionContainer());
+            // children.push(this.parseExprAtom());
           }
+
+          debugger;
 
           break;
 
@@ -455,6 +481,7 @@ export default function(instance) {
       } else if (this.match(tt.jsxTagStart)) {
         return this.jsxParseElement();
       } else {
+        console.log('inner called');
         return inner.call(this, refShortHandDefaultPos);
       }
     };
