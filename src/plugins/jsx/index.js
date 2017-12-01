@@ -299,6 +299,14 @@ pp.jsxParseSpreadChild = function() {
   return this.finishNode(node, "JSXSpreadChild");
 };
 
+// Parses JSX expression enclosed into curly brackets.
+
+pp.jsxParseExpressionContainer = function() {
+  const node = this.startNode();
+  node.expression = this.jsxParseDoExpression();
+  return this.finishNode(node, "JSXExpressionContainer");
+};
+
 // Parses do expression
 
 pp.jsxParseDoExpression = function() {
@@ -319,19 +327,31 @@ pp.jsxParseGeneratorExpressionContainer = function() {
   const node = this.startNode();
 
   if (this.eat(tt.star)) {
-    node.expression = this.jsxParseDoExpression();
+    node.expression = this.jsxParseGeneratorExpression();
     return this.finishNode(node, "JSXGeneratorExpressionContainer");
   } else {
     this.unexpected();
   }
-}
+};
 
-// Parses JSX expression enclosed into curly brackets.
+// Parses generator expression
 
-pp.jsxParseExpressionContainer = function() {
+pp.jsxParseGeneratorExpression = function() {
   const node = this.startNode();
-  node.expression = this.jsxParseDoExpression();
-  return this.finishNode(node, "JSXExpressionContainer");
+
+  const oldInFunc = this.state.inFunction;
+  const oldInGen = this.state.inGenerator;
+  const oldLabels = this.state.labels;
+  this.state.inFunction = true;
+  this.state.inGenerator = true;
+  this.state.labels = [];
+  node.body = this.parseBlock(true);
+  node.expression = false;
+  this.state.inFunction = oldInFunc;
+  this.state.inGenerator = oldInGen;
+  this.state.labels = oldLabels;
+
+  return this.finishNode(node, "GeneratorExpression");
 };
 
 // Parses following JSX attribute name-value pair.
