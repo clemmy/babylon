@@ -42,7 +42,7 @@ const pp = Parser.prototype;
 // Reads inline JSX contents token.
 
 pp.jsxReadToken = function() {
-  debugger;
+  console.log("JSX read token");
 
   let out = "";
   let chunkStart = this.state.pos;
@@ -53,10 +53,12 @@ pp.jsxReadToken = function() {
 
     const ch = this.input.charCodeAt(this.state.pos);
 
+    console.log(String.fromCharCode(ch));
+
     switch (ch) {
-      // case *:
-      //   consume & continue
-      // doens't really work because chunkStart is already *
+      case 42: // *
+        ++this.state.pos;
+        return this.finishToken(tt.star);
       case 60: // "<"
       case 123: // "{"
         if (this.state.pos === this.state.start) {
@@ -68,7 +70,6 @@ pp.jsxReadToken = function() {
         }
         out += this.input.slice(chunkStart, this.state.pos);
 
-        console.log(out); // *, DUH, jsText is just '*' right now'
         return this.finishToken(tt.jsxText, out);
 
       case 38: // "&"
@@ -90,8 +91,6 @@ pp.jsxReadToken = function() {
 };
 
 pp.jsxReadNewLine = function(normalizeCRLF) {
-  debugger;
-
   const ch = this.input.charCodeAt(this.state.pos);
   let out;
   ++this.state.pos;
@@ -108,8 +107,6 @@ pp.jsxReadNewLine = function(normalizeCRLF) {
 };
 
 pp.jsxReadString = function(quote) {
-  debugger;
-
   let out = "";
   let chunkStart = ++this.state.pos;
   for (;;) {
@@ -136,8 +133,6 @@ pp.jsxReadString = function(quote) {
 };
 
 pp.jsxReadEntity = function() {
-  debugger;
-
   let str = "";
   let count = 0;
   let entity;
@@ -180,8 +175,6 @@ pp.jsxReadEntity = function() {
 // by isIdentifierStart in readToken.
 
 pp.jsxReadWord = function() {
-  debugger;
-
   let ch;
   const start = this.state.pos;
   do {
@@ -317,7 +310,7 @@ pp.jsxParseDoExpression = function() {
   node.body = this.parseBlock(false);
   this.state.inFunction = oldInFunction;
   this.state.labels = oldLabels;
-  return this.finishNode(node, "DoExpression"); // replace this with a JSXImplicitDoExpression node
+  return this.finishNode(node, "DoExpression"); // TODO: replace this with a JSXImplicitDoExpression node
 };
 
 // Parses JSX generator expression enclosed into star-prefixed curly brackets
@@ -335,22 +328,9 @@ pp.jsxParseGeneratorExpressionContainer = function() {
 
 // Parses JSX expression enclosed into curly brackets.
 
-
 pp.jsxParseExpressionContainer = function() {
   const node = this.startNode();
-  // this.next();
-  // if (this.match(tt.braceR)) {
-  //   node.expression = this.jsxParseEmptyExpression();
-  // } else {
-  //   // node.expression = this.parseExpression();
-  //   node.expression = this.jsxParseDoExpression();
-  // }
-  // this.expect(tt.braceR);
-
   node.expression = this.jsxParseDoExpression();
-  // this.expect(tt.braceR); // no, this is not happening as long as we use parseBlock()
-  debugger;
-
   return this.finishNode(node, "JSXExpressionContainer");
 };
 
@@ -365,8 +345,6 @@ pp.jsxParseAttribute = function() {
     return this.finishNode(node, "JSXSpreadAttribute");
   }
   node.name = this.jsxParseNamespacedName();
-  console.log('parsed name: ');
-  console.log(node.name);
   node.value = this.eat(tt.eq) ? this.jsxParseAttributeValue() : null;
   return this.finishNode(node, "JSXAttribute");
 };
@@ -385,8 +363,6 @@ pp.jsxParseOpeningElementAt = function(startPos, startLoc) {
   node.name = this.jsxParseElementName();
 
   while (!this.match(tt.slash) && !this.match(tt.jsxTagEnd)) {
-    console.log('parsing attribute: ');
-    console.log(this.state.type);
     node.attributes.push(this.jsxParseAttribute());
   }
   node.selfClosing = this.eat(tt.slash);
@@ -434,25 +410,23 @@ pp.jsxParseElementAt = function(startPos, startLoc) {
           children.push(this.parseExprAtom());
           break;
 
-        // this doesn't make too much sense
-        // case tt.star:
-        //   console.log("I am in star case!!!");
-        //   debugger;
+        case tt.star:
+          if (this.lookahead().type === tt.braceL) {
+            children.push(this.jsxParseGeneratorExpressionContainer());
+          } else {
+            // this.state.type = tt.jsxText; // TODO: investigate a better way to parse it as if it's text
+            children.push(this.parseExprAtom());
+          }
+          break;
 
         case tt.braceL:
           if (this.lookahead().type === tt.ellipsis) {
             children.push(this.jsxParseSpreadChild());
           } else {
-            debugger;
-
             children.push(this.jsxParseExpressionContainer());
             // so here we have a few choices, either we fork, or we change grammar to move outside of {...}, but idk
           }
-
-          debugger;
-
           break;
-
         // istanbul ignore next - should never happen
         default:
           this.unexpected();
@@ -521,7 +495,6 @@ export default function(instance) {
   instance.extend("parseExprAtom", function(inner) {
     return function(refShortHandDefaultPos) {
       if (this.match(tt.jsxText)) {
-        console.log('derp');
         const node = this.parseLiteral(this.state.value, "JSXText");
         // https://github.com/babel/babel/issues/2078
         node.extra = null;
@@ -529,7 +502,6 @@ export default function(instance) {
       } else if (this.match(tt.jsxTagStart)) {
         return this.jsxParseElement();
       } else {
-        // console.log('inner called');
         return inner.call(this, refShortHandDefaultPos);
       }
     };
@@ -537,8 +509,6 @@ export default function(instance) {
 
   instance.extend("readToken", function(inner) {
     return function(code) {
-
-      // debugger;
       if (this.state.inPropertyName) return inner.call(this, code);
 
       const context = this.curContext();
@@ -573,8 +543,6 @@ export default function(instance) {
 
   instance.extend("updateContext", function(inner) {
     return function(prevType) {
-      debugger;
-
       if (this.match(tt.braceL)) {
         const curContext = this.curContext();
         if (curContext === tc.j_oTag) {
@@ -590,9 +558,6 @@ export default function(instance) {
         this.state.context.push(tc.j_cTag); // reconsider as closing tag context
         this.state.exprAllowed = false;
       }
-      // else if (this.match(tt.star) && this.lookahead().type === tt.braceL) { // this area is probably for reconsidering semantics?
-      //   debugger; // ??????
-      // }
       else {
         return inner.call(this, prevType);
       }
