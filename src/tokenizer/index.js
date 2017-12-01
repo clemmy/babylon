@@ -251,8 +251,6 @@ export default class Tokenizer {
   // right position.
 
   finishToken(type, val) {
-    // console.log("Finish token with type: " + type.label);
-    // console.log(this.state.value);
     this.state.end = this.state.pos;
     this.state.endLoc = this.state.curPosition();
     const prevType = this.state.type;

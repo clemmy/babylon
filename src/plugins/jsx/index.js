@@ -42,8 +42,6 @@ const pp = Parser.prototype;
 // Reads inline JSX contents token.
 
 pp.jsxReadToken = function() {
-  console.log("JSX read token");
-
   let out = "";
   let chunkStart = this.state.pos;
   for (;;) {
@@ -52,8 +50,6 @@ pp.jsxReadToken = function() {
     }
 
     const ch = this.input.charCodeAt(this.state.pos);
-
-    console.log(String.fromCharCode(ch));
 
     switch (ch) {
       case 42: // *
@@ -318,7 +314,7 @@ pp.jsxParseDoExpression = function() {
   node.body = this.parseBlock(false);
   this.state.inFunction = oldInFunction;
   this.state.labels = oldLabels;
-  return this.finishNode(node, "DoExpression"); // TODO: replace this with a JSXImplicitDoExpression node
+  return this.finishNode(node, "DoExpression"); // TODO: replace this with a JSXDoExpression node
 };
 
 // Parses JSX generator expression enclosed into star-prefixed curly brackets
@@ -351,7 +347,7 @@ pp.jsxParseGeneratorExpression = function() {
   this.state.inGenerator = oldInGen;
   this.state.labels = oldLabels;
 
-  return this.finishNode(node, "GeneratorExpression");
+  return this.finishNode(node, "JSXGeneratorExpression");
 };
 
 // Parses following JSX attribute name-value pair.
@@ -414,7 +410,6 @@ pp.jsxParseElementAt = function(startPos, startLoc) {
 
   if (!openingElement.selfClosing) {
     contents: for (;;) {
-      console.log(this.state.type);
       switch (this.state.type) {
         case tt.jsxTagStart:
           startPos = this.state.start; startLoc = this.state.startLoc;
