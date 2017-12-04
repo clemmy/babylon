@@ -59,9 +59,6 @@ pp.jsxReadToken = function() {
           if (ch === 60 && this.state.exprAllowed) {
             ++this.state.pos;
             return this.finishToken(tt.jsxTagStart);
-          } else if (ch === 42) {
-            ++this.state.pos;
-            return this.finishToken(tt.star);
           }
           return this.getTokenFromCode(ch);
         }
