@@ -53,14 +53,15 @@ pp.jsxReadToken = function() {
 
     switch (ch) {
       case 42: // *
-        ++this.state.pos;
-        return this.finishToken(tt.star);
       case 60: // "<"
       case 123: // "{"
         if (this.state.pos === this.state.start) {
           if (ch === 60 && this.state.exprAllowed) {
             ++this.state.pos;
             return this.finishToken(tt.jsxTagStart);
+          } else if (ch === 42) {
+            ++this.state.pos;
+            return this.finishToken(tt.star);
           }
           return this.getTokenFromCode(ch);
         }
