@@ -11,6 +11,7 @@ const HEX_NUMBER = /^[\da-fA-F]+$/;
 const DECIMAL_NUMBER = /^\d+$/;
 
 const FEATURE_FLAG_JSX_FRAGMENT = true;
+const FEATURE_FLAG_JSX_EXPRESSION = true;
 
 tc.j_oTag = new TokContext("<tag", false);
 tc.j_cTag = new TokContext("</tag", false);
@@ -63,7 +64,6 @@ pp.jsxReadToken = function() {
           return this.getTokenFromCode(ch);
         }
         out += this.input.slice(chunkStart, this.state.pos);
-
         return this.finishToken(tt.jsxText, out);
 
       case 38: // "&"
@@ -256,10 +256,18 @@ pp.jsxParseAttributeValue = function() {
       }
     case tt.braceL:
       node = this.jsxParseExpressionContainer();
-      if (!node.expression || node.expression.body.body.length === 0) {
-        this.raise(node.start, "JSX attributes must only be assigned a non-empty expression");
+      if (FEATURE_FLAG_JSX_EXPRESSION) {
+        if (!node.expression || node.expression.body.body.length === 0) {
+          this.raise(node.start, "JSX attributes must only be assigned a non-empty expression");
+        } else {
+          return node;
+        }
       } else {
-        return node;
+        if (node.expression.type === "JSXEmptyExpression") {
+          this.raise(node.start, "JSX attributes must only be assigned a non-empty expression");
+        } else {
+          return node;
+        }
       }
     case tt.jsxTagStart:
     case tt.string:
@@ -297,7 +305,17 @@ pp.jsxParseSpreadChild = function() {
 
 pp.jsxParseExpressionContainer = function() {
   const node = this.startNode();
-  node.expression = this.jsxParseDoExpression();
+  if (FEATURE_FLAG_JSX_EXPRESSION) {
+    node.expression = this.jsxParseDoExpression();
+  } else {
+    this.next();
+    if (this.match(tt.braceR)) {
+      node.expression = this.jsxParseEmptyExpression();
+    } else {
+      node.expression = this.parseExpression();
+    }
+    this.expect(tt.braceR);
+  }
   return this.finishNode(node, "JSXExpressionContainer");
 };
 
@@ -570,8 +588,7 @@ export default function(instance) {
         this.state.context.length -= 2; // do not consider JSX expr -> JSX open tag -> ... anymore
         this.state.context.push(tc.j_cTag); // reconsider as closing tag context
         this.state.exprAllowed = false;
-      }
-      else {
+      } else {
         return inner.call(this, prevType);
       }
     };
