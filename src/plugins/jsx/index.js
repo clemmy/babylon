@@ -427,7 +427,7 @@ pp.jsxParseElementAt = function(startPos, startLoc) {
           if (this.lookahead().type === tt.braceL) {
             children.push(this.jsxParseGeneratorExpressionContainer());
           } else {
-            // this.state.type = tt.jsxText; // TODO: investigate a better way to parse it as if it's text
+            this.state.type = tt.jsxText;
             children.push(this.parseExprAtom());
           }
           break;
