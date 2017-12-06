@@ -11,7 +11,7 @@ const HEX_NUMBER = /^[\da-fA-F]+$/;
 const DECIMAL_NUMBER = /^\d+$/;
 
 const FEATURE_FLAG_JSX_FRAGMENT = true;
-const FEATURE_FLAG_JSX_EXPRESSION = true;
+const FEATURE_FLAG_JSX_EXPRESSION = false;
 
 tc.j_oTag = new TokContext("<tag", false);
 tc.j_cTag = new TokContext("</tag", false);
@@ -246,7 +246,7 @@ pp.jsxParseAttributeValue = function() {
     case tt.star:
       if (this.lookahead().type === tt.braceL) {
         node = this.jsxParseGeneratorExpressionContainer();
-        if (!node.expression || node.expression.body.body.length === 0) {
+        if (!node.expression || node.expression.body.length === 0) {
           this.raise(node.start, "JSX attributes must only be assigned a non-empty expression");
         } else {
           return node;
@@ -349,21 +349,18 @@ pp.jsxParseGeneratorExpressionContainer = function() {
 // Parses generator expression
 
 pp.jsxParseGeneratorExpression = function() {
-  const node = this.startNode();
-
   const oldInFunc = this.state.inFunction;
   const oldInGen = this.state.inGenerator;
   const oldLabels = this.state.labels;
   this.state.inFunction = true;
   this.state.inGenerator = true;
   this.state.labels = [];
-  node.body = this.parseBlock(true);
-  node.expression = false;
+  const node = this.parseBlock(true);
   this.state.inFunction = oldInFunc;
   this.state.inGenerator = oldInGen;
   this.state.labels = oldLabels;
 
-  return this.finishNode(node, "JSXGeneratorExpression");
+  return node;
 };
 
 // Parses following JSX attribute name-value pair.
@@ -455,7 +452,6 @@ pp.jsxParseElementAt = function(startPos, startLoc) {
             children.push(this.jsxParseSpreadChild());
           } else {
             children.push(this.jsxParseExpressionContainer());
-            // so here we have a few choices, either we fork, or we change grammar to move outside of {...}, but idk
           }
           break;
         // istanbul ignore next - should never happen
