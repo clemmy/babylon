@@ -1,0 +1,1 @@
+<div attr=*/* bar */*{ yield foo; } />
