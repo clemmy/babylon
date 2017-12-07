@@ -346,6 +346,9 @@ pp.jsxParseGeneratorExpressionContainer = function() {
   }
 };
 
+
+const generatorExpressionLabel = { kind: "gexp" };
+
 // Parses generator expression
 
 pp.jsxParseGeneratorExpression = function() {
@@ -354,7 +357,7 @@ pp.jsxParseGeneratorExpression = function() {
   const oldLabels = this.state.labels;
   this.state.inFunction = true;
   this.state.inGenerator = true;
-  this.state.labels = [];
+  this.state.labels = [generatorExpressionLabel];
   const node = this.parseBlock(true);
   this.state.inFunction = oldInFunc;
   this.state.inGenerator = oldInGen;
