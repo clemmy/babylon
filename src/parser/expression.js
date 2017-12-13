@@ -371,6 +371,28 @@ pp.parseNoCallExpr = function () {
   return this.parseSubscripts(this.parseExprAtom(), startPos, startLoc, true);
 };
 
+const generatorExpressionLabel = { kind: "gexp" };
+
+pp.parseGeneratorExpression = function () {
+  const node = this.startNode();
+
+  if (this.eat(tt.star)) {
+    const oldInFunc = this.state.inFunction;
+    const oldInGen = this.state.inGenerator;
+    const oldLabels = this.state.labels;
+    this.state.inFunction = true;
+    this.state.inGenerator = true;
+    this.state.labels = [generatorExpressionLabel];
+    node.body = this.parseBlock(true);
+    this.state.inFunction = oldInFunc;
+    this.state.inGenerator = oldInGen;
+    this.state.labels = oldLabels;
+    return this.finishNode(node, "GeneratorExpression");
+  } else {
+    this.unexpected();
+  }
+};
+
 // Parse an atomic expression — either a single token that is an
 // expression, an expression started by a keyword like `function` or
 // `new`, or an expression wrapped in punctuation like `()`, `[]`,
@@ -381,6 +403,12 @@ pp.parseExprAtom = function (refShorthandDefaultPos) {
   let node;
 
   switch (this.state.type) {
+    case tt.star:
+      if (this.lookahead().type === tt.braceL) {
+        return this.parseGeneratorExpression();
+      } else {
+        this.unexpected();
+      }
     case tt._super:
       if (
           !this.state.inMethod &&
